@@ -23,6 +23,11 @@ function youtube_parser(url) {
     console.log('No url was entered');
     return '';
   }
+  // Check if url is valid
+  if (!url.includes('youtube.com/watch?v=')) {
+    console.log('Invalid youtube url entered');
+  }
+    
   var video_id = url.split('v=')[1];
   var ampersandPosition = video_id.indexOf('&');
   if(ampersandPosition !== -1) {
@@ -185,7 +190,7 @@ function App() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const video_code = youtube_parser(url);
-    const API_ENDPOINT = 'http://127.0.0.1:5000/' + video_code;
+    const API_ENDPOINT = 'http://127.0.0.1:5000/api/' + video_code;
     console.log('A video was submitted: ' + video_code);
 
     const submitButton = document.querySelector('.SubmitButton');

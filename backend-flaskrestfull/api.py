@@ -12,7 +12,7 @@ api = Api(app)
 
 
 class YoutubeSentimentAnalysis(Resource):
-    def get(self, url):
+    def get(self, video_code):
         """Only API endpoint for now, make a get request with a youtube content url
 
         Returns:
@@ -25,19 +25,19 @@ class YoutubeSentimentAnalysis(Resource):
         print("> Request remote_port : {}".format(request.environ["REMOTE_PORT"]))
         """
 
-        if url == "" or url == None:
+        if video_code == "" or video_code == None:
             print("Please provide content url, exiting program...")
             error_json = json.dumps({"error": "Please provide content url"})
             return error_json
-        print("url123123 : ", url)  # delete this later
+        print("video code submitted to flask api : ", video_code)  # delete this later
         stats, comments = do_youtube_sentiment_analysis_of_content(
-            youtube_content_url=url
+            youtube_content_url=video_code
         )
         response_dict = {"stats": stats, "comments": comments}
         return json.dumps(response_dict)
 
 
-api.add_resource(YoutubeSentimentAnalysis, "/<string:url>")
+api.add_resource(YoutubeSentimentAnalysis, "/api/<string:video_code>")
 
 if __name__ == "__main__":
     app.run(debug=True)
