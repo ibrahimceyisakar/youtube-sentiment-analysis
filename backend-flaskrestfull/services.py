@@ -1,26 +1,3 @@
-"""
-This file contains all the models (classes) used in the project
-
-Classes:
-    InstagramCommentScraper     (login credentials required)
-    YoutubeCommentScraper       (no credentials required)
-    TextTranslator              (no credentials required)    
-    SentimentAnalysis           (no credentials required)
-    CSVExporter                 (no credentials required)
-    
-Used Packages/Modules:
-    https://github.com/adw0rd/instagrapi                    for InstagramCommentScraper
-    https://github.com/alexmercerind/youtube-search-python  for YoutubeCommentScraper
-    https://github.com/nidhaloff/deep-translator            for TextTranslator
-    https://github.com/sloria/TextBlob                      for SentimentAnalysis
-    https://github.com/fnielsen/afinn                       for SentimentAnalysis
-"""
-
-
-from math import e
-from re import T
-
-
 def do_youtube_sentiment_analysis_of_content(youtube_content_url):
     from models import (
         YoutubeCommentScraper,
