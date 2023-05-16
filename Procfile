@@ -1,1 +1,1 @@
-web: gunicorn --chdir ./backend-flaskrestfull api:app --bind 
+web: gunicorn --chdir ./backend-flaskrestfull api:app
