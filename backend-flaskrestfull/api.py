@@ -4,7 +4,7 @@ from flask_cors import CORS
 from flask_restful import Api, Resource
 from services import do_youtube_sentiment_analysis_of_content
 
-app = Flask(__name__, static_folder="../frontend-reactjs/build", static_url_path="")
+app = Flask(__name__, static_folder="/frontend-reactjs/build", static_url_path="")
 CORS(app)
 api = Api(app)
 
