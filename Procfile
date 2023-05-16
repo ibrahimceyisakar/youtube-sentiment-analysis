@@ -1,1 +1,1 @@
-web: gunicorn backend-flaskrestfull/api
+web: gunicorn backend-flaskrestfull/api:app
