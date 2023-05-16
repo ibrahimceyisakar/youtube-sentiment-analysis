@@ -1,10 +1,10 @@
 import json
-from flask import Flask, send_from_directory
+from flask import Flask, send_static_file
 from flask_cors import CORS
 from flask_restful import Api, Resource
 from services import do_youtube_sentiment_analysis_of_content
 
-app = Flask(__name__, static_folder="/frontend-reactjs/build", static_url_path="")
+app = Flask(__name__, static_folder="../build", static_url_path="/")
 CORS(app)
 api = Api(app)
 
@@ -14,7 +14,7 @@ api = Api(app)
 @app.route("/")
 def serve():
     print("serving index.html")
-    return send_from_directory(app.static_folder, "index.html")
+    return send_static_file(app.static_folder, "index.html")
 
 
 class YoutubeSentimentAnalysis(Resource):
