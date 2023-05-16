@@ -1,14 +1,19 @@
 import json
-from flask import Flask, request
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_restful import Api, Resource
 from services import do_youtube_sentiment_analysis_of_content
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="frontend-reactjs/build", static_url_path="")
 CORS(app)
 api = Api(app)
 
 # I need a decorator to make endpoint trace IP address
+
+
+@app.route("/")
+def serve():
+    return send_from_directory(app.static_folder, "index.html")
 
 
 class YoutubeSentimentAnalysis(Resource):
@@ -40,4 +45,4 @@ class YoutubeSentimentAnalysis(Resource):
 api.add_resource(YoutubeSentimentAnalysis, "/api/<string:video_code>")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True)
