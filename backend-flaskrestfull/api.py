@@ -1,5 +1,5 @@
 import json
-from flask import Flask, send_static_file
+from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api, Resource
 from services import do_youtube_sentiment_analysis_of_content
