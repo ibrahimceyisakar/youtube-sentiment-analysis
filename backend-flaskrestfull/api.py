@@ -4,7 +4,7 @@ from flask_cors import CORS
 from flask_restful import Api, Resource
 from services import do_youtube_sentiment_analysis_of_content
 
-app = Flask(__name__, static_folder="frontend-reactjs/build", static_url_path="")
+app = Flask(__name__, static_folder="../frontend-reactjs/build", static_url_path="")
 CORS(app)
 api = Api(app)
 
@@ -13,6 +13,7 @@ api = Api(app)
 
 @app.route("/")
 def serve():
+    print("serving index.html")
     return send_from_directory(app.static_folder, "index.html")
 
 
@@ -30,11 +31,12 @@ class YoutubeSentimentAnalysis(Resource):
         print("> Request remote_port : {}".format(request.environ["REMOTE_PORT"]))
         """
 
+        print("video code submitted to flask api : ", video_code)  # delete this later
+
         if video_code == "" or video_code == None:
             print("Please provide content url, exiting program...")
             error_json = json.dumps({"error": "Please provide content url"})
             return error_json
-        print("video code submitted to flask api : ", video_code)  # delete this later
         stats, comments = do_youtube_sentiment_analysis_of_content(
             youtube_content_url=video_code
         )
