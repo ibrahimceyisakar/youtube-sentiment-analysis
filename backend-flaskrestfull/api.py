@@ -11,10 +11,12 @@ api = Api(app)
 # I need a decorator to make endpoint trace IP address
 
 
+# Endpoint to serve the React App
+# This is the entry endpoint for the React App
 @app.route("/")
 def serve():
     print("serving index.html")
-    return send_static_file(app.static_folder, "index.html")
+    return app.send_static_file("index.html")
 
 
 class YoutubeSentimentAnalysis(Resource):
