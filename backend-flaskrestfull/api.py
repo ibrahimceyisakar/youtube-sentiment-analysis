@@ -7,7 +7,7 @@ from services import do_youtube_sentiment_analysis_of_content
 # frontend-reactjs/
 app = Flask(
     __name__,
-    static_folder="../frontend-reactjs/build/",
+    static_folder="./frontend-reactjs/build/",
     # static_url_path="../build/",
     # template_folder="../build/",
 )
@@ -22,7 +22,10 @@ api = Api(app)
 @app.route("/")
 def serve():
     print("serving index.html")
-    return app.send_static_file("index.html")
+    try:
+        return app.send_static_file("index.html")
+    except Exception as e:
+        print("Error serving index.html : ", e)
 
 
 class YoutubeSentimentAnalysis(Resource):
