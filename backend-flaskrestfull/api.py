@@ -8,8 +8,8 @@ from services import do_youtube_sentiment_analysis_of_content
 app = Flask(
     __name__,
     static_folder="../build/",
-    static_url_path="../build/",
-    template_folder="../build/",
+    # static_url_path="../build/",
+    # template_folder="../build/",
 )
 CORS(app)
 api = Api(app)
