@@ -190,7 +190,7 @@ function App() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const video_code = youtube_parser(url);
-    const API_ENDPOINT = 'http://127.0.0.1:5000/api/' + video_code;
+    const API_ENDPOINT = 'https://youtube-sentiment-analysis.herokuapp.com/api/' + video_code;
     console.log('A video was submitted: ' + video_code);
 
     const submitButton = document.querySelector('.SubmitButton');
