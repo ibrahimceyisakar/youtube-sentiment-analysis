@@ -2,7 +2,7 @@ import json
 from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api, Resource
-from services import do_youtube_sentiment_analysis_of_content
+from services import YoutubeCommentSentimentAnalysis
 
 # frontend-reactjs/
 app = Flask(
@@ -16,19 +16,19 @@ app = Flask(
 CORS(app)
 api = Api(app)
 
-# I need a decorator to make endpoint trace IP address
+# TODO I need a decorator to make endpoint trace IP address
 
 
-# Endpoint to serve the React App
 # This is the entry endpoint for the React App
 @app.route("/")
 def serve():
-    print("serving index.html")
+    print("serving index.html (hope you didn't forget to run 'npm run build')")
     try:
         return app.send_static_file("index.html")
     except Exception as e:
-        print("Error serving index.html : ", e)
-        return "Error serving index.html"
+        error_string = "Error serving index.html : {}".format(e)
+        print(error_string)
+        return error_string
 
 
 class YoutubeSentimentAnalysis(Resource):
@@ -51,9 +51,7 @@ class YoutubeSentimentAnalysis(Resource):
             print("Please provide content url, exiting program...")
             error_json = json.dumps({"error": "Please provide content url"})
             return error_json
-        stats, comments = do_youtube_sentiment_analysis_of_content(
-            youtube_content_url=video_code
-        )
+        stats, comments = YoutubeCommentSentimentAnalysis(video_code=video_code).start()
         response_dict = {"stats": stats, "comments": comments}
         return json.dumps(response_dict)
 

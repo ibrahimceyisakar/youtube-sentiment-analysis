@@ -148,7 +148,7 @@ function App() {
           </div>
 
           {/* Turkish version */}
-          {/*
+          
           <div className='row mt-3'>
             <div className="col-sm-1">
               <span className="CommentLanguage ps-4">TR</span>
@@ -157,23 +157,24 @@ function App() {
               <span className='CommentText'>{comment.text}</span>
             </div>
             <div className="col-sm-4">
-              <span className='CommentPolarity'>P : {comment.polarity}</span> <br></br>
-              <span className='CommentSubjectivity'>S : {comment.subjectivity}</span> <br></br>
-              <span className='CommentAfinnScore'>A : {comment.afinn_score}</span> <br></br>
+              <span className='CommentPolarity'>P : {comment.stats.polarity.toFixed(2)}</span> <br></br>
+              <span className='CommentSubjectivity'>S : {comment.stats.subjectivity.toFixed(2)}</span> <br></br>
+              <span className='CommentAfinnScore'>A : {comment.stats.afinn.toFixed(2)}</span> <br></br>
             </div>
           </div>
-          */}
+          
+          {/* English version */}
           <div className='row mt-3'>
             <div className="col-sm-1">
               <span className="CommentLanguage ps-4">EN</span>
             </div>
             <div className='col-sm-7'>
-              <span className='CommentText'>{comment.text}</span>
+              <span className='CommentText'>{comment.text_translated}</span>
             </div>
             <div className="col-sm-4">
-              <span className='CommentPolarity'>P : {comment.polarity}</span> <br></br>
-              <span className='CommentSubjectivity'>S : {comment.subjectivity}</span> <br></br>
-              <span className='CommentAfinnScore'>A : {comment.afinn_score}</span> <br></br>
+              <span className='CommentPolarity'>P : {comment.stats.polarity.toFixed(2)}</span> <br></br>
+              <span className='CommentSubjectivity'>S : {comment.stats.subjectivity.toFixed(2)}</span> <br></br>
+              <span className='CommentAfinnScore'>A : {comment.stats.afinn.toFixed(2)}</span> <br></br>
             </div>
           </div>
         </div>
@@ -190,7 +191,8 @@ function App() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const video_code = youtube_parser(url);
-    const API_ENDPOINT = 'https://youtube-sentiment-analysis.herokuapp.com/api/' + video_code;
+    //const API_ENDPOINT = 'https://youtube-sentiment-analysis.herokuapp.com/api/' + video_code;
+    const API_ENDPOINT = 'http://127.0.0.1:5000/api/' + video_code;
     console.log('A video was submitted: ' + video_code);
 
     const submitButton = document.querySelector('.SubmitButton');

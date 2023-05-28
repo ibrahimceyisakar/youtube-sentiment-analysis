@@ -1,5 +1,5 @@
 """
-This file contains all the models (classes) used in the project
+This file contains all the core models (classes) used in the project
 
 Classes:
     InstagramCommentScraper     (login credentials required)
@@ -80,13 +80,8 @@ class InstagramCommentScraper:
 
 
 class YoutubeCommentScraper:
-    def __init__(self):
-        print("called __init__ at YoutubeCommentScraper")
-
-        super().__init__()
-
-    def get_comments(self, content_url):
-        print("called get_comments at YoutubeCommentScraper")
+    @classmethod
+    def get_comments(cls, content_url):
         from youtubesearchpython import Comments
 
         comments = Comments(content_url)
@@ -134,7 +129,7 @@ class SentimentAnalysis:
     """
 
     @classmethod
-    def analyze(cls, text):
+    def analyze_textblob(cls, text):
         """_summary_
 
         Args:
@@ -172,6 +167,17 @@ class SentimentAnalysis:
 
         afinn = Afinn()
         return afinn.score(text)
+
+    @classmethod
+    def analyze(cls, text):
+        polarity, subjectivity = cls.analyze_textblob(text)
+        afinn = cls.analyze_afinn(text)
+        stats = {
+            "polarity": polarity,
+            "subjectivity": subjectivity,
+            "afinn": afinn,
+        }
+        return stats
 
 
 class CSVExporter:
