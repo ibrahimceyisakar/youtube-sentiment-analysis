@@ -67,53 +67,60 @@ function App() {
               Replies 
             </div>
             <div>
-              <i className="bi bi-arrow-return-right"></i>{stats.total_replies}
+              <i className="bi bi-arrow-return-right"></i>{stats.commentgpt_stats}
             </div>
           </div>
 
           
-          <div className="mt-4">
-                  Avr polarity <br></br> {stats.avr_polarity} <br></br>
-                  Avr subjectivity <br></br>{stats.avr_subjectivity} <br></br>
-                  Avr afinn Score <br></br>{stats.avr_afinn_score} <br></br>
+          <div className="mt-4  font-small">
+                  Avr polarity <br></br> {stats.avr_polarity.toFixed(2)} <br></br>
+                  Avr subjectivity <br></br>{stats.avr_subjectivity.toFixed(2)} <br></br>
+                  Avr afinn Score <br></br>{stats.avr_afinn_score.toFixed(2)} <br></br>
           </div>
           </div>
       ) : <> 
           <br></br>
           <div>
-            <div className="row p-0">
+            <div className="row p-0  font-small">
               <div className="col-sm-4">
-                <div className="mx-2 Comment">Comments</div>
-                <div className="mx-2 p-1 Comment">{stats.total_comments}</div>
+                <div className="mx-2">Comments<br></br>{stats.total_comments ? stats.total_comments : "..."}</div>
               </div>
                <div className="col-sm-4">
-                <div className="mx-2 Comment">Likes</div>
-                <div className="mx-2 p-1 Comment">{stats.total_likes}</div>
+                <div className="mx-2">Likes<br></br>{stats.total_likes ? stats.total_likes : "..."}</div>
               </div>
                <div className="col-sm-4">
-                <div className="mx-2 Comment">Replies</div>
-                <div className="mx-2 p-1 Comment">{stats.total_replies}</div>
+                <div className="mx-2">Replies<br></br>{stats.total_reply_count ? stats.total_reply_count : "..."}                
+</div>
               </div>
               </div>
+            <div className="row mt-4 p-0 font-small">
+              <div className="col-sm-4 ">
+                <div className="mx-2">Polarity<br></br> {stats.avr_polarity ? stats.avr_polarity.toFixed(2) : "..."
+                }</div>
+                <div className="mx-2 p-1"></div>
+              </div>
+               <div className="col-sm-4">
+                <div className="mx-2">Subjectivity<br></br>{stats.avr_subjectivity ? stats.avr_subjectivity.toFixed(2) : "..."
+                }</div>
+                <div className="mx-2 p-1"></div>
+              </div>
+              <div className="col-sm-4">
+                <div className="mx-2">Afinn
+                 
+                  <br></br>  {stats.avr_afinn_score  ? stats.avr_afinn_score.toFixed(2) : "..."
+                  }
+                </div>
+                <div className="mx-2"></div>
+              </div>
+            </div>
             <div className="row mt-4 p-0">
-              <div className="col-sm-4">
-                <div className="mx-2">Polarity</div>
-                <hr className="mx-2 my-1"></hr>
-                <div className="mx-2 p-1">{stats.avr_polarity}</div>
-              </div>
-               <div className="col-sm-4">
-                <div className="mx-2">Subjectivity</div>
-                <hr className="mx-2 my-1"></hr>
-                <div className="mx-2 p-1">{stats.avr_subjectivity}</div>
-              </div>
-              <div className="col-sm-4">
-                <div className="mx-2">Afinn</div>
-                <hr className="mx-2 my-1"></hr>
-                <div className="mx-2">{stats.avr_afinn_score}</div>
+              <div className="col-sm-12">
+                <div className="mx-2">CommentGPT Response</div>
+                <div className="mx-2 p-1 fs-6">{stats.commentgpt_stats}</div>
               </div>
             </div>
           </div>
-
+          
         </>
       
       
@@ -125,56 +132,50 @@ function App() {
   const Comments = ({ comments }) => {
   return (
     <div className='CommentsContainer mt-4'>
-
+      <div className='row'>
+      </div>
       {comments.map((comment, index) => (
         <div className='Comment' key={index}>
           <div className='row'>
               <div className='col-sm-1'>
-                <span className='CommentProfilePic'>
-                  <img className='CommentProfilePicImg' alt='Profile Pic' src={comment.profile_pic_url}>
+               <span className='CommentProfilePic'>
+                  <img className='CommentProfilePicImg m-1' alt='Profile Pic' src={comment.author_profile_image_url}>
                   </img>
                 </span>
               </div>
-              <div className='col-sm-7 ps-4'>
-                <span className='CommentUsername'>{comment.username}</span>
+              <div className='col-sm-3'>
+                <span className='CommentUsername'>{comment.author_name}</span>
                 <br></br>
-                <span className='CommentPublishedAt'>{comment.created_at_utc}</span>
-              </div>
-              <div className='col-sm-4'>
-                <span className="CommentLikes"><i className="bi bi-heart"></i> : {comment.reply_count !== null ? comment.reply_count : 0}{comment.like_count}</span>
-                <br></br>
-                <span className='CommentReplies'><i className="bi bi-arrow-return-right"></i> : {comment.reply_count !== null ? comment.reply_count : 0}</span>
-              </div>
-          </div>
+                <span className='CommentPublishedAt'>{comment.published_at}</span>
+              <br></br><br></br>
+                <span className='CommentText'>{comment.text}</span>
 
-          {/* Turkish version */}
-          
-          <div className='row mt-3'>
-            <div className="col-sm-1">
-              <span className="CommentLanguage ps-4">TR</span>
-            </div>
-            <div className='col-sm-7'>
-              <span className='CommentText'>{comment.text}</span>
-            </div>
-            <div className="col-sm-4">
-              <span className='CommentPolarity'>P : {comment.stats.polarity.toFixed(2)}</span> <br></br>
-              <span className='CommentSubjectivity'>S : {comment.stats.subjectivity.toFixed(2)}</span> <br></br>
-              <span className='CommentAfinnScore'>A : {comment.stats.afinn.toFixed(2)}</span> <br></br>
-            </div>
+              </div>
+            <div className='col-sm-8'>
+               <span className="CommentLikes"><i className="bi bi-heart"></i>: {comment.like_count !== null ? comment.like_count: 0}</span>
+                <span class="px-2 py-0"> </span>
+                <span className='CommentReplies'><i className="bi bi-arrow-return-right"></i>: {comment.total_reply_count !== null ? comment.total_reply_count: 0}</span>
+             <span class="px-2 py-0"> </span>
+
+              <span className='CommentPolarity'>Polarity: {comment.stats.polarity.toFixed(2)}</span> <span class="px-2 py-0"> </span>
+
+              <span className='CommentSubjectivity'>Subjectivity: {comment.stats.subjectivity.toFixed(2)}</span> <span class="px-2 py-0"> </span>
+
+              <span className='CommentAfinnScore'>Affin: {comment.stats.afinn.toFixed(2)}</span> <span class="px-2 py-0"> </span>
+
+              <span className='CommentAfinnScore'>Classification: {comment.commentgpt_stats.sentiment}</span> <span class="px-2 py-0"> </span>
+
+              <span className='CommentAfinnScore'>Score: {comment.commentgpt_stats.score}</span> <span class="px-2 py-0"> </span>
+
+               </div>
           </div>
           
-          {/* English version */}
           <div className='row mt-3'>
             <div className="col-sm-1">
-              <span className="CommentLanguage ps-4">EN</span>
             </div>
-            <div className='col-sm-7'>
-              <span className='CommentText'>{comment.text_translated}</span>
+            <div className='col-sm-3'>
             </div>
-            <div className="col-sm-4">
-              <span className='CommentPolarity'>P : {comment.stats.polarity.toFixed(2)}</span> <br></br>
-              <span className='CommentSubjectivity'>S : {comment.stats.subjectivity.toFixed(2)}</span> <br></br>
-              <span className='CommentAfinnScore'>A : {comment.stats.afinn.toFixed(2)}</span> <br></br>
+            <div className="col-sm-8">
             </div>
           </div>
         </div>
@@ -225,31 +226,29 @@ function App() {
   return (
     <div>
       <div className="container p-0">
-        <div className="AppTitle">Youtube Sentiment Analysis </div>
-        <div className="AppSubtitle">   Get & Analyse video comments easily </div>        
-        <div className="row ThreeColumnLayout">
-          <div className="col-sm LeftColumn">
-            <br></br>
-            <iframe width="400" height="300" src="https://www.youtube.com/embed/2L8RXnEFae8" title="iboflows   Tingling Brain" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-
-            <br>
-            </br>
+        <div className="AppTitle">CommentGPT </div>
+        <div className="AppSubtitle"> One-click tool for analyzing YouTube comments sentiments </div>          
+        <div className="row">
+          <div className="col-sm-12">
             <form onSubmit={handleSubmit} className="MyForm">
-              <label>
-                <input type="text" value={url}
-                  className="TextInput"
-                  placeholder=" Enter Youtube URL of the video "
-                  onChange={handleChange} />
-              </label>
-              <br></br>
-              <input className="SubmitButton"
-                type="submit" value="Analyse Comments" />
+              <div class="row">
+                <div class="col-sm-8">
+                  <input type="text" value={url}
+                    className="TextInput ps-4"
+                    placeholder=" Enter Youtube URL of the video "
+                    onChange={handleChange} />
+                </div>
+                <div class="col-sm-4">
+                  <input className="SubmitButton"
+                    type="submit" value="Analyse Comments" />
+                  </div>
+                </div>
             </form>
           </div>
-          <div className="col-sm MiddleColumn">
-            <Stats stats={stats} />
-          </div>
-          <div className="col-sm RightColumn">
+        </div>
+
+        <div className="row ThreeColumnLayout">
+          <div className="col-sm-12 RightColumn">
             <Comments comments={comments} />
           </div>
         </div>
