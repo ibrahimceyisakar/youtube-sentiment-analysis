@@ -133,40 +133,44 @@ function App() {
   return (
     <div className='CommentsContainer mt-4'>
       <div className='row'>
+        <div className="col-sm-1">
+        </div>
+        <div className='col-sm-2'>
+        </div>
+        <div className="col-sm-9 font-small font-boldish">
+          <span className='CommentAfinnScore'>SentiType </span><span class="px-4 py-0"> </span>
+          <span className='CommentAfinnScore'>SentiScore</span><span class="px-4 py-0"> </span>
+          <span className="CommentLikes">Likes</span><span class="px-4 py-0"> </span>
+          <span className='CommentReplies'>Replies </span><span class="px-4 py-0"> </span>
+          <span className='CommentPolarity'>Polarity </span><span class="px-4 py-0"> </span>
+          <span className='CommentSubjectivity'>Subjectivity </span><span class="px-4 py-0"> </span>
+          <span className='CommentAfinnScore'>Affin </span><span class="px-4 py-0"> </span>
+        </div>
       </div>
       {comments.map((comment, index) => (
         <div className='Comment' key={index}>
           <div className='row'>
               <div className='col-sm-1'>
-               <span className='CommentProfilePic'>
-                  <img className='CommentProfilePicImg m-1' alt='Profile Pic' src={comment.author_profile_image_url}>
-                  </img>
+                <span className='CommentProfilePic'>
+                    <img className='CommentProfilePicImg m-1' alt='Profile Pic' src={comment.author_profile_image_url}>
+                    </img>
                 </span>
               </div>
-              <div className='col-sm-3'>
-                <span className='CommentUsername'>{comment.author_name}</span>
-                <br></br>
-                <span className='CommentPublishedAt'>{comment.published_at}</span>
-              <br></br><br></br>
-                <span className='CommentText'>{comment.text}</span>
-
+              <div className='col-sm-2'>
+                 <span className='CommentUsername'>{comment.author_name}</span>
+                 <br></br>
+                  <span className='CommentPublishedAt'>{comment.published_at}</span>
+                 <br></br><br></br>
+                  <span className='CommentText'>{comment.text}</span>
               </div>
-            <div className='col-sm-8'>
-               <span className="CommentLikes"><i className="bi bi-heart"></i>: {comment.like_count !== null ? comment.like_count: 0}</span>
-                <span class="px-2 py-0"> </span>
-                <span className='CommentReplies'><i className="bi bi-arrow-return-right"></i>: {comment.total_reply_count !== null ? comment.total_reply_count: 0}</span>
-             <span class="px-2 py-0"> </span>
-
-              <span className='CommentPolarity'>Polarity: {comment.stats.polarity.toFixed(2)}</span> <span class="px-2 py-0"> </span>
-
-              <span className='CommentSubjectivity'>Subjectivity: {comment.stats.subjectivity.toFixed(2)}</span> <span class="px-2 py-0"> </span>
-
-              <span className='CommentAfinnScore'>Affin: {comment.stats.afinn.toFixed(2)}</span> <span class="px-2 py-0"> </span>
-
-              <span className='CommentAfinnScore'>Classification: {comment.commentgpt_stats.sentiment}</span> <span class="px-2 py-0"> </span>
-
-              <span className='CommentAfinnScore'>Score: {comment.commentgpt_stats.score}</span> <span class="px-2 py-0"> </span>
-
+              <div className='col-sm-9'>
+                  <span className='CommentAfinnScore'>{comment.commentgpt_stats.sentiment}</span> <span class="px-4 py-0"> </span>
+                  <span className='CommentAfinnScore'>{comment.commentgpt_stats.score}</span> <span class="px-4 py-0"> </span>
+                  <span className="CommentLikes">{comment.like_count !== null ? comment.like_count: 0}</span><span class="px-4 py-0"> </span>
+                  <span className='CommentReplies'>{comment.total_reply_count !== null ? comment.total_reply_count: 0}</span> <span class="px-4 py-0"> </span>
+                  <span className='CommentPolarity'>{comment.stats.polarity.toFixed(2)}</span> <span class="px-4 py-0"> </span>
+                  <span className='CommentSubjectivity'>{comment.stats.subjectivity.toFixed(2)}</span> <span class="px-4 py-0"> </span>
+                  <span className='CommentAfinnScore'>{comment.stats.afinn.toFixed(2)}</span> <span class="px-4 py-0"> </span>
                </div>
           </div>
           
