@@ -1,8 +1,9 @@
-def process_youtube_api_response(raw_comment: dict, add_translation=True) -> dict:
-    """Processes a single raw comment from the youtube api response (sets the keys to the values we want)
+def process_youtube_api_response(raw_comment: dict, add_translation=False) -> dict:
+    """Processes a single raw comment from the 3rd party youtube api response (sets the keys to the values we want)
 
     Args:
         raw_comment (dict): raw api response for a single comment
+        add_translation (bool, optional): whether to add translation to the comment. Defaults to False.
 
     Returns:
         dict: processesed comment (with keys we want)
@@ -14,106 +15,64 @@ def process_youtube_api_response(raw_comment: dict, add_translation=True) -> dic
         text_translated = TextTranslator.to_english(raw_comment["content"])
 
     comment = {
-        "user_pk": raw_comment["author"]["id"],
-        "username": raw_comment["author"]["name"],
-        "profile_pic_url": raw_comment["author"]["thumbnails"][0]["url"],
-        "like_count": raw_comment["votes"]["simpleText"],
-        "reply_count": raw_comment["replyCount"],
-        "text": raw_comment["content"],
+        "user_pk": raw_comment["author_channel_id"],
+        "username": raw_comment["author_name"],
+        "profile_pic_url": raw_comment["author_profile_image_url"],
+        "like_count": raw_comment["like_count"],
+        "reply_count": raw_comment["total_reply_count"],
+        "text": raw_comment["text"],
         "text_translated": text_translated,
-        "created_at": raw_comment["published"],
+        "created_at": raw_comment["published_at"],
     }
     return comment
 
 
 def do_youtube_sentiment_analysis_of_content(video_code):
     from models import (
-        YoutubeCommentScraper,
-        TextTranslator,
-        SentimentAnalysis,
-        CSVExporter,
+        # YoutubeCommentScraper,    # 3rd party API for getting youtube comments
+        YoutubeOfficialAPIWrapper,  # Official Youtube API for getting youtube comments
+        OpenAIAPIWrapper,  # OpenAI API for classifying and scoring comments
+        # TextTranslator,           # For translating text to english (no longer used)
+        SentimentAnalysis,  # For calculating sentiment stats (polarity, subjectivity, afinn)
+        # SubtitleManager,  # For getting subtitles (by 3rd party API)
+        CSVExporter,  # For exporting comments to CSV file
     )
-    from helpers import printify
 
     if video_code == "" or video_code == None:
         print("Please provide video_code param, exiting program...")
         exit()
 
-    raw_comments = YoutubeCommentScraper.get_comments(video_code)
-    processed_comments = [process_youtube_api_response(c) for c in raw_comments]
+    # Get comments from official youtube api (or 3rd party scraper)
+    # Use YoutubeCommentScraper if you don't have a youtube api key
+    raw_comments = YoutubeOfficialAPIWrapper.get_comments(video_code)
+
+    # These two lines are for 3rd party scraper
+    # raw_comments = YoutubeCommentScraper.get_comments(video_code)
+    # processed_comments = [process_official_api_response(c) for c in raw_comments]
+
+    processed_comments = raw_comments
+    if processed_comments == None or processed_comments == []:
+        print("No comments to process, exiting program...")
+        exit()
+
+    print("Len of processed_comments: ", len(processed_comments))
+
+    # Calculate sentiment stats for each comment (subjectivity, polarity, afinn)
     sentiment_stats = [SentimentAnalysis.analyze(c["text"]) for c in processed_comments]
-    sentiment_stats_en = [
-        SentimentAnalysis.analyze(c["text_translated"]) for c in processed_comments
-    ]
+
+    commentgpt_stats = OpenAIAPIWrapper.make_request(
+        [(c["comment_youtube_id"] + " - " + c["text"]) for c in processed_comments]
+    )
 
     for c in processed_comments:
         c["stats"] = sentiment_stats[processed_comments.index(c)]
-        c["stats_en"] = sentiment_stats_en[processed_comments.index(c)]
+        c["commentgpt_stats"] = commentgpt_stats[processed_comments.index(c)]
 
-    csv_exporter = CSVExporter()
-    csv_exporter.export(processed_comments)
-
-    # Define defaults
-    c_len = 0
-    avr_polarity = 0
-    avr_subjectivity = 0
-    avr_afinn_score = 0
-    avr_polarity_en = 0
-    avr_subjectivity_en = 0
-    avr_afinn_score_en = 0
-    avr_likes, total_likes = 0, 0
-    avr_replies, total_replies = 0, 0
-
-    c_len = len(processed_comments)
-    avr_polarity = (
-        float(sum(c["stats"]["polarity"] for c in processed_comments)) / c_len
-    )
-    avr_subjectivity = (
-        float(sum(c["stats"]["subjectivity"] for c in processed_comments)) / c_len
-    )
-    avr_afinn_score = (
-        float(sum(c["stats"]["afinn"] for c in processed_comments)) / c_len
-    )
-    avr_polarity_en = (
-        float(sum(c["stats_en"]["polarity"] for c in processed_comments)) / c_len
-    )
-    avr_subjectivity_en = (
-        float(sum(c["stats_en"]["subjectivity"] for c in processed_comments)) / c_len
-    )
-    avr_afinn_score_en = (
-        float(sum(c["stats_en"]["afinn"] for c in processed_comments)) / c_len
-    )
-
-    # Calculate total likes
-    for c in processed_comments:
-        try:
-            total_likes += c["like_count"]
-        except TypeError:
-            total_likes += 0
-
-    # Calculate total replies
-    for c in processed_comments:
-        try:
-            total_replies += c["reply_count"]
-        except TypeError:
-            total_replies += 0
-
-    # Calculate average likes and replies
-    avr_likes = float(total_likes) / c_len
-    avr_replies = float(total_replies) / c_len
+    # csv_exporter = CSVExporter()
+    # csv_exporter.export(processed_comments)
 
     stats = {
-        "total_comments": c_len,
-        "total_likes": total_likes,
-        "total_replies": total_replies,
-        "avr_polarity": avr_polarity,
-        "avr_subjectivity": avr_subjectivity,
-        "avr_afinn_score": avr_afinn_score,
-        "avr_polarity_en": avr_polarity_en,
-        "avr_subjectivity_en": avr_subjectivity_en,
-        "avr_afinn_score_en": avr_afinn_score_en,
-        "avr_likes": avr_likes,
-        "avr_replies": avr_replies,
+        "my-key-123": "my-value-123",
     }
 
     print("completed main.py successfully")

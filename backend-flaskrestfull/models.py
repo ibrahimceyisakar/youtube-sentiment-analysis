@@ -14,6 +14,8 @@ Used Packages/Modules:
     https://github.com/nidhaloff/deep-translator            for TextTranslator
     https://github.com/sloria/TextBlob                      for SentimentAnalysis
     https://github.com/fnielsen/afinn                       for SentimentAnalysis
+    
+TODO : Update this text with new classes
 """
 
 
@@ -172,6 +174,7 @@ class SentimentAnalysis:
     def analyze(cls, text):
         polarity, subjectivity = cls.analyze_textblob(text)
         afinn = cls.analyze_afinn(text)
+
         stats = {
             "polarity": polarity,
             "subjectivity": subjectivity,
@@ -202,3 +205,165 @@ class CSVExporter:
             dict_writer = csv.DictWriter(output_file, keys)
             dict_writer.writeheader()
             dict_writer.writerows(comments)
+
+
+class YoutubeOfficialAPIWrapper:
+    """_summary_"""
+
+    @classmethod
+    def parse_single_comment(cls, comment):
+        item = comment
+
+        video_id = item["snippet"]["videoId"]
+        comment_youtube_id = item["snippet"]["topLevelComment"]["id"]
+        total_reply_count = item["snippet"]["totalReplyCount"]
+        text = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
+        published_at = item["snippet"]["topLevelComment"]["snippet"]["publishedAt"]
+        like_count = item["snippet"]["topLevelComment"]["snippet"]["likeCount"]
+        author_name = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
+        author_channel_id = item["snippet"]["topLevelComment"]["snippet"][
+            "authorChannelId"
+        ]["value"]
+        author_profile_image_url = item["snippet"]["topLevelComment"]["snippet"][
+            "authorProfileImageUrl"
+        ]
+        comment_dict = {
+            "video_id": video_id,
+            "comment_youtube_id": comment_youtube_id,
+            "total_reply_count": total_reply_count,
+            "text": text,
+            "published_at": published_at,
+            "like_count": like_count,
+            "author_name": author_name,
+            "author_channel_id": author_channel_id,
+            "author_profile_image_url": author_profile_image_url,
+        }
+        return comment_dict
+
+    @classmethod
+    def get_comments(cls, video_code):
+        """Returns a list of comments for a given video code"""
+        from googleapiclient.discovery import build
+        from googleapiclient.errors import HttpError
+
+        api_service_name = "youtube"
+        api_version = "v3"
+        DEVELOPER_KEY = "AIzaSyBfy8cU5_1496l3nejtIAJc9JiBm2C9JLQ"
+        youtube = build(api_service_name, api_version, developerKey=DEVELOPER_KEY)
+        try:
+            response = (
+                youtube.commentThreads()
+                .list(
+                    part="snippet",
+                    maxResults=100,
+                    textFormat="plainText",
+                    videoId=video_code,
+                )
+                .execute()
+            )
+        except HttpError as e:
+            print("HttpError at video (not found): {}".format(e))
+            return
+
+        return_list = []
+
+        for item in response["items"]:
+            try:
+                item = cls.parse_single_comment(item)
+                return_list.append(item)
+            except KeyError as e:
+                print("KeyError at  {} \nerr msg: {}".format(video_code, e))
+                print("IntegrityError at  {} \nerr msg: {}".format(video_code, e))
+
+        return return_list
+
+
+class OpenAIAPIWrapper:
+    @classmethod
+    def generate_prompt(cls):
+        return """I will give you a list of YouTube video comments with their ids, I want you to perform these actions on each one:
+
+        - Classify the sentiment in the comment (negative, neutral, positive),
+        - Calculate an sentiment score between [-100, 100] (-100 negative, 0 neutral, +100 positive)
+
+        * Your response must be in the same schame as the sample response below 
+        * Your response should be a single line of valid JSON, please remove all whitespace from your response
+
+        Here is a sample response:
+
+        { "comments" = [ { "code": "comment_1_code", "sentiment": "positive", "score": "+90", }, { "code": "comment_2_code", "sentiment": "positive", "score": "+90", }, { "code": "comment_3_code", "sentiment": "positive", "score": "+90", }] }
+
+        Good luck!
+        """
+
+    @classmethod
+    def parse_response(cls, response):
+        import json
+
+        response_text = response["choices"][0]["message"]["content"]
+        response_json = json.loads(response_text)
+        comments = response_json["comments"]
+        for c in comments:
+            print(c["code"], c["sentiment"], c["score"])
+        return comments
+
+    @classmethod
+    def make_request(cls, comments):
+        import os
+        import openai
+        from dotenv import load_dotenv
+
+        load_dotenv()
+        openai.api_key = os.getenv("OPENAI_API_KEY")
+
+        model = "gpt-3.5-turbo"
+        prompt = cls.generate_prompt()
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=[
+                {"role": "user", "content": prompt},
+                {"role": "assistant", "content": "Okay, let's go!"},
+                {"role": "user", "content": str(comments)},
+            ],
+            temperature=0,
+        )
+
+        return cls.parse_response(response)
+
+
+class SubtitleManager:
+    """_summary_"""
+
+    def __init__(self):
+        print("called __init__ at SubtitleManager")
+
+    @classmethod
+    def get_subtitles(cls, video_id):
+        """_summary_
+
+        Args:
+            video_id (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        print("called parse at SubtitleManager")
+
+        if video_id == "" or video_id == None:
+            print("Please provide video_id")
+            exit()
+
+        from youtube_transcript_api import YouTubeTranscriptApi
+
+        try:
+            transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        except Exception as e:
+            print("Exception at video (not found): {}".format(e))
+            return
+
+        return_list = []
+        for item in transcript:
+            return_list.append(item["text"])
+
+        print("reutrn2727", return_list)
+        return return_list
