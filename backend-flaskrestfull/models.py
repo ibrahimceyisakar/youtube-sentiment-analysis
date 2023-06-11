@@ -21,6 +21,33 @@ class Comment:
     author_profile_image_url: str
     total_reply_count: int = 0
 
+    stats: dict = {"polarity": 0, "subjectivity": 0, "afinn": 0}
+    commentgpt_stats: dict = {"sentiment": "neutral", "score": 0}
+
+    def to_json(self):
+        return {
+            "comment_youtube_id": self.comment_youtube_id,
+            "text": self.text,
+            "published_at": self.published_at,
+            "like_count": self.like_count,
+            "author_name": self.author_name,
+            "author_channel_id": self.author_channel_id,
+            "author_profile_image_url": self.author_profile_image_url,
+            "total_reply_count": self.total_reply_count,
+        }
+
+    def to_dict(self):
+        return {
+            "comment_youtube_id": self.comment_youtube_id,
+            "text": self.text,
+            "published_at": self.published_at,
+            "like_count": self.like_count,
+            "author_name": self.author_name,
+            "author_channel_id": self.author_channel_id,
+            "author_profile_image_url": self.author_profile_image_url,
+            "total_reply_count": self.total_reply_count,
+        }
+
 
 class BaseYoutubeCommentScraper(ABC):
     """Abstract Base Class for other concrete YoutubeCommentScraper classes.
@@ -101,7 +128,7 @@ class YoutubeThirdPartyCommentScraper(BaseYoutubeCommentScraper):
 
 class YoutubeOfficialAPICommentScraper(BaseYoutubeCommentScraper):
     @classmethod
-    def parse_single_comment(cls, comment: dict) -> dict:
+    def parse_single_comment(cls, comment: dict) -> Comment:
         print("\n parsing official api comment: ", comment)
         comment_youtube_id = comment["snippet"]["topLevelComment"]["id"]
         total_reply_count = comment["snippet"]["totalReplyCount"]
@@ -118,21 +145,20 @@ class YoutubeOfficialAPICommentScraper(BaseYoutubeCommentScraper):
             "authorProfileImageUrl"
         ]
 
-        parsed_comment = {
-            "comment_youtube_id": comment_youtube_id,
-            "total_reply_count": total_reply_count,
-            "text": text,
-            "published_at": published_at,
-            "like_count": like_count,
-            "author_name": author_name,
-            "author_channel_id": author_channel_id,
-            "author_profile_image_url": author_profile_image_url,
-        }
-
+        parsed_comment = Comment(
+            comment_youtube_id=comment_youtube_id,
+            text=text,
+            published_at=published_at,
+            like_count=like_count,
+            total_reply_count=total_reply_count,
+            author_name=author_name,
+            author_channel_id=author_channel_id,
+            author_profile_image_url=author_profile_image_url,
+        )
         return parsed_comment
 
     @classmethod
-    def parse_comment_list(cls, comment_list: list[dict]) -> list[dict]:
+    def parse_comment_list(cls, comment_list: list[dict]) -> list[Comment]:
         return [cls.parse_single_comment(c) for c in comment_list]
 
     @classmethod
