@@ -9,6 +9,54 @@ from attr import dataclass
 
 
 @dataclass
+class CommentGPTStats:
+    """_summary_"""
+
+    sentiment: str
+    score: int
+
+    def to_json(self):
+        return {
+            "sentiment": self.sentiment,
+            "score": self.score,
+        }
+
+    def to_dict(self):
+        return {
+            "sentiment": self.sentiment,
+            "score": self.score,
+        }
+
+
+@dataclass
+class CommentPSAStats:
+    """_summary_"""
+
+    polarity: float
+    subjectivity: float
+    afinn: float
+
+    def to_json(self):
+        return {
+            "polarity": self.polarity,
+            "subjectivity": self.subjectivity,
+            "afinn": self.afinn,
+        }
+
+    def to_dict(self):
+        return {
+            "polarity": self.polarity,
+            "subjectivity": self.subjectivity,
+            "afinn": self.afinn,
+        }
+
+
+@dataclass
+class CommentSentimentStats:
+    """_summary_"""
+
+
+@dataclass
 class Comment:
     """_summary_"""
 
