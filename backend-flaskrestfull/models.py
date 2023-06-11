@@ -1,22 +1,151 @@
-"""
-This file contains all the core models (classes) used in the project
+from abc import ABC, abstractmethod
 
-Classes:
-    InstagramCommentScraper     (login credentials required)
-    YoutubeCommentScraper       (no credentials required)
-    TextTranslator              (no credentials required)    
-    SentimentAnalysis           (no credentials required)
-    CSVExporter                 (no credentials required)
-    
-Used Packages/Modules:
-    https://github.com/adw0rd/instagrapi                    for InstagramCommentScraper
-    https://github.com/alexmercerind/youtube-search-python  for YoutubeCommentScraper
-    https://github.com/nidhaloff/deep-translator            for TextTranslator
-    https://github.com/sloria/TextBlob                      for SentimentAnalysis
-    https://github.com/fnielsen/afinn                       for SentimentAnalysis
-    
-TODO : Update this text with new classes
-"""
+# TODO : Add docstrings to all methods
+# TODO : Add type hints to all methods (take a look at pydantic)
+# TODO : Seperate scraping & parsing logic to different classes
+# TODO : Scraping and parsing must have their own base classes
+
+
+class BaseYoutubeCommentScraper(ABC):
+    """Abstract Base Class for other concrete YoutubeCommentScraper classes.
+    Official Youtube API scraper and 3rd party scraper classes will inherit from this class.
+    """
+
+    @abstractmethod
+    def parse_single_comment(self, comment: dict) -> dict:
+        """
+
+        Args:
+            comment (dict): a single comment dictionary from api response
+
+        Returns:
+            _type_: _description_
+        """
+        pass
+
+    @abstractmethod
+    def parse_comment_list(self, comment_list: list[dict]) -> list[dict]:
+        pass
+
+    @abstractmethod
+    def get_comments(self, content_code: str) -> list[dict]:
+        """_summary_
+
+        Args:
+            content_url (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        pass
+
+
+class YoutubeThirdPartyCommentScraper(BaseYoutubeCommentScraper):
+    @classmethod
+    def parse_single_comment(cls, comment: dict) -> dict:
+        print("\n parsing 3rd party api comment: ", comment)
+        comment_youtube_id = comment["id"]
+        total_reply_count = comment["replyCount"]
+        text = comment["content"]
+        published_at = comment["published"]
+        like_count = comment["votes"]["simpleText"]
+        author_name = comment["author"]["name"]
+        author_channel_id = comment["author"]["id"]
+        author_profile_image_url = comment["author"]["thumbnails"][0]["url"]
+
+        parsed_comment = {
+            "comment_youtube_id": comment_youtube_id,
+            "total_reply_count": total_reply_count,
+            "text": text,
+            "published_at": published_at,
+            "like_count": like_count,
+            "author_name": author_name,
+            "author_channel_id": author_channel_id,
+            "author_profile_image_url": author_profile_image_url,
+        }
+
+        return parsed_comment
+
+    @classmethod
+    def parse_comment_list(cls, comment_list: list[dict]) -> list[dict]:
+        return [cls.parse_single_comment(c) for c in comment_list]
+
+    @classmethod
+    def get_comments(cls, video_code: str) -> list[dict]:
+        """Returns a list of comments for a given video code"""
+        print("called get_comments at YoutubeThirdPartyCommentScraper")
+        from youtubesearchpython import Comments
+
+        comments = Comments(video_code)
+        while comments.hasMoreComments:
+            comments.getNextComments()
+
+        return comments.comments["result"]
+
+
+class YoutubeOfficialAPICommentScraper(BaseYoutubeCommentScraper):
+    @classmethod
+    def parse_single_comment(cls, comment: dict) -> dict:
+        print("\n parsing official api comment: ", comment)
+        comment_youtube_id = comment["snippet"]["topLevelComment"]["id"]
+        total_reply_count = comment["snippet"]["totalReplyCount"]
+        text = comment["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
+        published_at = comment["snippet"]["topLevelComment"]["snippet"]["publishedAt"]
+        like_count = comment["snippet"]["topLevelComment"]["snippet"]["likeCount"]
+        author_name = comment["snippet"]["topLevelComment"]["snippet"][
+            "authorDisplayName"
+        ]
+        author_channel_id = comment["snippet"]["topLevelComment"]["snippet"][
+            "authorChannelId"
+        ]["value"]
+        author_profile_image_url = comment["snippet"]["topLevelComment"]["snippet"][
+            "authorProfileImageUrl"
+        ]
+
+        parsed_comment = {
+            "comment_youtube_id": comment_youtube_id,
+            "total_reply_count": total_reply_count,
+            "text": text,
+            "published_at": published_at,
+            "like_count": like_count,
+            "author_name": author_name,
+            "author_channel_id": author_channel_id,
+            "author_profile_image_url": author_profile_image_url,
+        }
+
+        return parsed_comment
+
+    @classmethod
+    def parse_comment_list(cls, comment_list: list[dict]) -> list[dict]:
+        return [cls.parse_single_comment(c) for c in comment_list]
+
+    @classmethod
+    def get_comments(cls, video_code: str) -> list[dict]:
+        """Returns a list of comments for a given video code"""
+        print("called get_comments at YoutubeOfficialAPICommentScraper")
+        from googleapiclient.discovery import build
+        from googleapiclient.errors import HttpError
+
+        api_service_name = "youtube"
+        api_version = "v3"
+        DEVELOPER_KEY = "AIzaSyBfy8cU5_1496l3nejtIAJc9JiBm2C9JLQ"
+        youtube = build(api_service_name, api_version, developerKey=DEVELOPER_KEY)
+        try:
+            response = (
+                youtube.commentThreads()
+                .list(
+                    part="snippet",
+                    maxResults=100,
+                    textFormat="plainText",
+                    videoId=video_code,
+                )
+                .execute()
+            )
+        except HttpError as e:
+            print("HttpError at video (not found): {}".format(e))
+            return
+
+        return response["items"]
 
 
 class InstagramCommentScraper:
@@ -43,7 +172,7 @@ class InstagramCommentScraper:
         Args:
             content_url (_type_): _description_
 
-        Returns:
+        Returns:x
             _type_: _description_
 
         # TODO: Move login to __init__ method
@@ -79,18 +208,6 @@ class InstagramCommentScraper:
         comments = cl.media_comments(media_id, amount=0)
         print("Total comments in get_comments: ", len(comments))
         return comments
-
-
-class YoutubeCommentScraper:
-    @classmethod
-    def get_comments(cls, content_url):
-        from youtubesearchpython import Comments
-
-        comments = Comments(content_url)
-        while comments.hasMoreComments:
-            comments.getNextComments()
-
-        return comments.comments["result"]
 
 
 class TextTranslator:
@@ -205,77 +322,6 @@ class CSVExporter:
             dict_writer = csv.DictWriter(output_file, keys)
             dict_writer.writeheader()
             dict_writer.writerows(comments)
-
-
-class YoutubeOfficialAPIWrapper:
-    """_summary_"""
-
-    @classmethod
-    def parse_single_comment(cls, comment):
-        item = comment
-
-        video_id = item["snippet"]["videoId"]
-        comment_youtube_id = item["snippet"]["topLevelComment"]["id"]
-        total_reply_count = item["snippet"]["totalReplyCount"]
-        text = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
-        published_at = item["snippet"]["topLevelComment"]["snippet"]["publishedAt"]
-        like_count = item["snippet"]["topLevelComment"]["snippet"]["likeCount"]
-        author_name = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
-        author_channel_id = item["snippet"]["topLevelComment"]["snippet"][
-            "authorChannelId"
-        ]["value"]
-        author_profile_image_url = item["snippet"]["topLevelComment"]["snippet"][
-            "authorProfileImageUrl"
-        ]
-        comment_dict = {
-            "video_id": video_id,
-            "comment_youtube_id": comment_youtube_id,
-            "total_reply_count": total_reply_count,
-            "text": text,
-            "published_at": published_at,
-            "like_count": like_count,
-            "author_name": author_name,
-            "author_channel_id": author_channel_id,
-            "author_profile_image_url": author_profile_image_url,
-        }
-        return comment_dict
-
-    @classmethod
-    def get_comments(cls, video_code):
-        """Returns a list of comments for a given video code"""
-        from googleapiclient.discovery import build
-        from googleapiclient.errors import HttpError
-
-        api_service_name = "youtube"
-        api_version = "v3"
-        DEVELOPER_KEY = "AIzaSyBfy8cU5_1496l3nejtIAJc9JiBm2C9JLQ"
-        youtube = build(api_service_name, api_version, developerKey=DEVELOPER_KEY)
-        try:
-            response = (
-                youtube.commentThreads()
-                .list(
-                    part="snippet",
-                    maxResults=100,
-                    textFormat="plainText",
-                    videoId=video_code,
-                )
-                .execute()
-            )
-        except HttpError as e:
-            print("HttpError at video (not found): {}".format(e))
-            return
-
-        return_list = []
-
-        for item in response["items"]:
-            try:
-                item = cls.parse_single_comment(item)
-                return_list.append(item)
-            except KeyError as e:
-                print("KeyError at  {} \nerr msg: {}".format(video_code, e))
-                print("IntegrityError at  {} \nerr msg: {}".format(video_code, e))
-
-        return return_list
 
 
 class OpenAIAPIWrapper:
