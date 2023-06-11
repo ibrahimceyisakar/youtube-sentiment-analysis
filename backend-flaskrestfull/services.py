@@ -56,6 +56,9 @@ def do_youtube_sentiment_analysis_of_content(video_code):
         exit()
 
     print("Len of processed_comments: ", len(processed_comments))
+    COMMENT_COUNT_LIMIT = 20
+    if len(processed_comments) > COMMENT_COUNT_LIMIT:
+        processed_comments = processed_comments[:COMMENT_COUNT_LIMIT]
 
     # Calculate sentiment stats for each comment (subjectivity, polarity, afinn)
     sentiment_stats = [SentimentAnalysis.analyze(c["text"]) for c in processed_comments]
