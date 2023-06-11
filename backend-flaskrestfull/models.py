@@ -1,9 +1,25 @@
 from abc import ABC, abstractmethod
 
+from attr import dataclass
+
 # TODO : Add docstrings to all methods
 # TODO : Add type hints to all methods (take a look at pydantic)
 # TODO : Seperate scraping & parsing logic to different classes
 # TODO : Scraping and parsing must have their own base classes
+
+
+@dataclass
+class Comment:
+    """_summary_"""
+
+    comment_youtube_id: str
+    text: str
+    published_at: str
+    like_count: int
+    author_name: str
+    author_channel_id: str
+    author_profile_image_url: str
+    total_reply_count: int = 0
 
 
 class BaseYoutubeCommentScraper(ABC):
