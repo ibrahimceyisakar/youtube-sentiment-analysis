@@ -62,29 +62,6 @@ class CommentPSAStats:
 
 
 @dataclass
-class CommentSentimentStats:
-    """_summary_"""
-
-    comment_youtube_id: str
-    commentgpt_stats: CommentGPTStats
-    psa_stats: CommentPSAStats
-
-    def to_json(self):
-        return {
-            "comment_youtube_id": self.comment_youtube_id,
-            "commentgpt_stats": self.commentgpt_stats,
-            "psa_stats": self.psa_stats,
-        }
-
-    def to_dict(self):
-        return {
-            "comment_youtube_id": self.comment_youtube_id,
-            "commentgpt_stats": self.commentgpt_stats,
-            "psa_stats": self.psa_stats,
-        }
-
-
-@dataclass
 class Comment:
     """_summary_"""
 
