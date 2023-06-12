@@ -28,8 +28,13 @@ def do_youtube_sentiment_analysis_of_content(video_code):
         exit()
 
     print("Len of processed_comments: ", len(processed_comments))
-    COMMENT_COUNT_LIMIT = 20
+    COMMENT_COUNT_LIMIT = 25
     if len(processed_comments) > COMMENT_COUNT_LIMIT:
+        # Order Comments List by their like_count field
+        processed_comments = sorted(
+            processed_comments, key=lambda c: c.like_count, reverse=True
+        )
+        # Take top N comments from ordered Comments list
         processed_comments = processed_comments[:COMMENT_COUNT_LIMIT]
 
     # Calculate sentiment PSA stats for each comment (subjectivity, polarity, afinn)
