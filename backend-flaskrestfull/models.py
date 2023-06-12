@@ -1,9 +1,102 @@
 from abc import ABC, abstractmethod
 
+from attr import dataclass
+from typing import Optional
+
 # TODO : Add docstrings to all methods
 # TODO : Add type hints to all methods (take a look at pydantic)
 # TODO : Seperate scraping & parsing logic to different classes
 # TODO : Scraping and parsing must have their own base classes
+
+
+@dataclass
+class CommentGPTStats:
+    """_summary_"""
+
+    code: str
+    sentiment: str
+    score: int
+
+    def to_json(self):
+        return {
+            "code": self.code,
+            "sentiment": self.sentiment,
+            "score": self.score,
+        }
+
+    def from_json(self, json):
+        return CommentGPTStats(**json)
+
+    def to_dict(self):
+        return {
+            "code": self.code,
+            "sentiment": self.sentiment,
+            "score": self.score,
+        }
+
+    def from_dict(self, dict):
+        return CommentGPTStats(**dict)
+
+
+@dataclass
+class CommentPSAStats:
+    """_summary_"""
+
+    polarity: float
+    subjectivity: float
+    afinn: float
+
+    def to_json(self):
+        return {
+            "polarity": self.polarity,
+            "subjectivity": self.subjectivity,
+            "afinn": self.afinn,
+        }
+
+    def to_dict(self):
+        return {
+            "polarity": self.polarity,
+            "subjectivity": self.subjectivity,
+            "afinn": self.afinn,
+        }
+
+
+@dataclass
+class Comment:
+    """_summary_"""
+
+    comment_youtube_id: str
+    text: str
+    published_at: str
+    like_count: int
+    author_name: str
+    author_channel_id: str
+    author_profile_image_url: str
+    total_reply_count: int
+
+    def to_json(self):
+        return {
+            "comment_youtube_id": self.comment_youtube_id,
+            "text": self.text,
+            "published_at": self.published_at,
+            "like_count": self.like_count,
+            "author_name": self.author_name,
+            "author_channel_id": self.author_channel_id,
+            "author_profile_image_url": self.author_profile_image_url,
+            "total_reply_count": self.total_reply_count,
+        }
+
+    def to_dict(self):
+        return {
+            "comment_youtube_id": self.comment_youtube_id,
+            "text": self.text,
+            "published_at": self.published_at,
+            "like_count": self.like_count,
+            "author_name": self.author_name,
+            "author_channel_id": self.author_channel_id,
+            "author_profile_image_url": self.author_profile_image_url,
+            "total_reply_count": self.total_reply_count,
+        }
 
 
 class BaseYoutubeCommentScraper(ABC):
@@ -85,7 +178,7 @@ class YoutubeThirdPartyCommentScraper(BaseYoutubeCommentScraper):
 
 class YoutubeOfficialAPICommentScraper(BaseYoutubeCommentScraper):
     @classmethod
-    def parse_single_comment(cls, comment: dict) -> dict:
+    def parse_single_comment(cls, comment: dict) -> Comment:
         print("\n parsing official api comment: ", comment)
         comment_youtube_id = comment["snippet"]["topLevelComment"]["id"]
         total_reply_count = comment["snippet"]["totalReplyCount"]
@@ -102,21 +195,20 @@ class YoutubeOfficialAPICommentScraper(BaseYoutubeCommentScraper):
             "authorProfileImageUrl"
         ]
 
-        parsed_comment = {
-            "comment_youtube_id": comment_youtube_id,
-            "total_reply_count": total_reply_count,
-            "text": text,
-            "published_at": published_at,
-            "like_count": like_count,
-            "author_name": author_name,
-            "author_channel_id": author_channel_id,
-            "author_profile_image_url": author_profile_image_url,
-        }
-
+        parsed_comment = Comment(
+            comment_youtube_id=comment_youtube_id,
+            text=text,
+            published_at=published_at,
+            like_count=like_count,
+            total_reply_count=total_reply_count,
+            author_name=author_name,
+            author_channel_id=author_channel_id,
+            author_profile_image_url=author_profile_image_url,
+        )
         return parsed_comment
 
     @classmethod
-    def parse_comment_list(cls, comment_list: list[dict]) -> list[dict]:
+    def parse_comment_list(cls, comment_list: list[dict]) -> list[Comment]:
         return [cls.parse_single_comment(c) for c in comment_list]
 
     @classmethod
@@ -288,16 +380,15 @@ class SentimentAnalysis:
         return afinn.score(text)
 
     @classmethod
-    def analyze(cls, text):
+    def analyze_psa(cls, text):
         polarity, subjectivity = cls.analyze_textblob(text)
         afinn = cls.analyze_afinn(text)
 
-        stats = {
-            "polarity": polarity,
-            "subjectivity": subjectivity,
-            "afinn": afinn,
-        }
-        return stats
+        comment_psa_stats = CommentPSAStats(
+            polarity=polarity, subjectivity=subjectivity, afinn=afinn
+        )
+
+        return comment_psa_stats
 
 
 class CSVExporter:
@@ -343,7 +434,7 @@ class OpenAIAPIWrapper:
         """
 
     @classmethod
-    def parse_response(cls, response):
+    def parse_response(cls, response) -> list[CommentGPTStats]:
         import json
 
         response_text = response["choices"][0]["message"]["content"]
@@ -351,10 +442,15 @@ class OpenAIAPIWrapper:
         comments = response_json["comments"]
         for c in comments:
             print(c["code"], c["sentiment"], c["score"])
+        # TODO
+        comments = [
+            CommentGPTStats(code=c["code"], sentiment=c["sentiment"], score=c["score"])
+            for c in comments
+        ]
         return comments
 
     @classmethod
-    def make_request(cls, comments):
+    def make_request(cls, comments) -> list[CommentGPTStats]:
         import os
         import openai
         from dotenv import load_dotenv
@@ -371,7 +467,7 @@ class OpenAIAPIWrapper:
                 {"role": "assistant", "content": "Okay, let's go!"},
                 {"role": "user", "content": str(comments)},
             ],
-            temperature=0,
+            temperature=0.20,
         )
 
         return cls.parse_response(response)
