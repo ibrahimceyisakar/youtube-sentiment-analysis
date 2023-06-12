@@ -12,20 +12,29 @@ from attr import dataclass
 class CommentGPTStats:
     """_summary_"""
 
+    code: str
     sentiment: str
     score: int
 
     def to_json(self):
         return {
+            "code": self.code,
             "sentiment": self.sentiment,
             "score": self.score,
         }
 
+    def from_json(self, json):
+        return CommentGPTStats(**json)
+
     def to_dict(self):
         return {
+            "code": self.code,
             "sentiment": self.sentiment,
             "score": self.score,
         }
+
+    def from_dict(self, dict):
+        return CommentGPTStats(**dict)
 
 
 @dataclass
@@ -54,6 +63,24 @@ class CommentPSAStats:
 @dataclass
 class CommentSentimentStats:
     """_summary_"""
+
+    comment_youtube_id: str
+    commentgpt_stats: CommentGPTStats
+    psa_stats: CommentPSAStats
+
+    def to_json(self):
+        return {
+            "comment_youtube_id": self.comment_youtube_id,
+            "commentgpt_stats": self.commentgpt_stats,
+            "psa_stats": self.psa_stats,
+        }
+
+    def to_dict(self):
+        return {
+            "comment_youtube_id": self.comment_youtube_id,
+            "commentgpt_stats": self.commentgpt_stats,
+            "psa_stats": self.psa_stats,
+        }
 
 
 @dataclass
@@ -378,16 +405,15 @@ class SentimentAnalysis:
         return afinn.score(text)
 
     @classmethod
-    def analyze(cls, text):
+    def analyze_psa(cls, text):
         polarity, subjectivity = cls.analyze_textblob(text)
         afinn = cls.analyze_afinn(text)
 
-        stats = {
-            "polarity": polarity,
-            "subjectivity": subjectivity,
-            "afinn": afinn,
-        }
-        return stats
+        comment_psa_stats = CommentPSAStats(
+            polarity=polarity, subjectivity=subjectivity, afinn=afinn
+        )
+
+        return comment_psa_stats.to_json()
 
 
 class CSVExporter:
@@ -433,7 +459,7 @@ class OpenAIAPIWrapper:
         """
 
     @classmethod
-    def parse_response(cls, response):
+    def parse_response(cls, response) -> list[CommentGPTStats]:
         import json
 
         response_text = response["choices"][0]["message"]["content"]
@@ -441,10 +467,15 @@ class OpenAIAPIWrapper:
         comments = response_json["comments"]
         for c in comments:
             print(c["code"], c["sentiment"], c["score"])
+        # TODO
+        comments = [
+            CommentGPTStats(code=c["code"], sentiment=c["sentiment"], score=c["score"])
+            for c in comments
+        ]
         return comments
 
     @classmethod
-    def make_request(cls, comments):
+    def make_request(cls, comments) -> list[CommentGPTStats]:
         import os
         import openai
         from dotenv import load_dotenv
@@ -461,7 +492,7 @@ class OpenAIAPIWrapper:
                 {"role": "assistant", "content": "Okay, let's go!"},
                 {"role": "user", "content": str(comments)},
             ],
-            temperature=0,
+            temperature=0.20,
         )
 
         return cls.parse_response(response)
