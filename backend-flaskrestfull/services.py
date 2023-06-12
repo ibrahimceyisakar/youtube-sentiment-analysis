@@ -28,6 +28,7 @@ def do_youtube_sentiment_analysis_of_content(video_code):
         exit()
 
     print("Len of processed_comments: ", len(processed_comments))
+
     COMMENT_COUNT_LIMIT = 20
     if len(processed_comments) > COMMENT_COUNT_LIMIT:
         processed_comments = processed_comments[:COMMENT_COUNT_LIMIT]
@@ -38,7 +39,7 @@ def do_youtube_sentiment_analysis_of_content(video_code):
         SentimentAnalysis.analyze_psa(c.text) for c in processed_comments
     ]
 
-    # Calculate a CommentGPT stat for each comment
+    # Calculate a CommentGPT stat for each comment (sentiment, sentiment score)
     # It is a list of CommentGPTStats objects
     commentgpt_stats = OpenAIAPIWrapper.make_request(
         [(c.comment_youtube_id + " - " + c.text) for c in processed_comments]
