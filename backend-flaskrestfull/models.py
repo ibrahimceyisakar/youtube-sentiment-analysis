@@ -122,42 +122,6 @@ class Comment:
         }
 
 
-@dataclass
-class CommenWithStats(Comment):
-    """_summary_"""
-
-    stats: Optional[CommentPSAStats]
-    commentgpt_stats: Optional[CommentGPTStats]
-
-    def to_json(self):
-        return {
-            "comment_youtube_id": self.comment_youtube_id,
-            "text": self.text,
-            "published_at": self.published_at,
-            "like_count": self.like_count,
-            "author_name": self.author_name,
-            "author_channel_id": self.author_channel_id,
-            "author_profile_image_url": self.author_profile_image_url,
-            "total_reply_count": self.total_reply_count,
-            "stats": self.stats,
-            "commentgpt_stats": self.commentgpt_stats,
-        }
-
-    def to_dict(self):
-        return {
-            "comment_youtube_id": self.comment_youtube_id,
-            "text": self.text,
-            "published_at": self.published_at,
-            "like_count": self.like_count,
-            "author_name": self.author_name,
-            "author_channel_id": self.author_channel_id,
-            "author_profile_image_url": self.author_profile_image_url,
-            "total_reply_count": self.total_reply_count,
-            "stats": self.stats,
-            "commentgpt_stats": self.commentgpt_stats,
-        }
-
-
 class BaseYoutubeCommentScraper(ABC):
     """Abstract Base Class for other concrete YoutubeCommentScraper classes.
     Official Youtube API scraper and 3rd party scraper classes will inherit from this class.
