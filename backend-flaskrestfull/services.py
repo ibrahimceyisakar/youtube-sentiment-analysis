@@ -16,8 +16,8 @@ def do_youtube_sentiment_analysis_of_content(video_code):
         exit()
 
     # These two lines are for 3rd party scraper
-    raw_comments = YoutubeThirdPartyCommentScraper.get_comments(video_code)
-    processed_comments = YoutubeThirdPartyCommentScraper.parse_comment_list(
+    raw_comments = YoutubeOfficialAPICommentScraper.get_comments(video_code)
+    processed_comments = YoutubeOfficialAPICommentScraper.parse_comment_list(
         raw_comments
     )
 
