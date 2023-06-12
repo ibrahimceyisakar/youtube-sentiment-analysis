@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from attr import dataclass
+from typing import Optional
 
 # TODO : Add docstrings to all methods
 # TODO : Add type hints to all methods (take a look at pydantic)
@@ -94,10 +95,7 @@ class Comment:
     author_name: str
     author_channel_id: str
     author_profile_image_url: str
-    total_reply_count: int = 0
-
-    stats: dict = {"polarity": 0, "subjectivity": 0, "afinn": 0}
-    commentgpt_stats: dict = {"sentiment": "neutral", "score": 0}
+    total_reply_count: int
 
     def to_json(self):
         return {
@@ -121,6 +119,42 @@ class Comment:
             "author_channel_id": self.author_channel_id,
             "author_profile_image_url": self.author_profile_image_url,
             "total_reply_count": self.total_reply_count,
+        }
+
+
+@dataclass
+class CommenWithStats(Comment):
+    """_summary_"""
+
+    stats: Optional[CommentPSAStats]
+    commentgpt_stats: Optional[CommentGPTStats]
+
+    def to_json(self):
+        return {
+            "comment_youtube_id": self.comment_youtube_id,
+            "text": self.text,
+            "published_at": self.published_at,
+            "like_count": self.like_count,
+            "author_name": self.author_name,
+            "author_channel_id": self.author_channel_id,
+            "author_profile_image_url": self.author_profile_image_url,
+            "total_reply_count": self.total_reply_count,
+            "stats": self.stats,
+            "commentgpt_stats": self.commentgpt_stats,
+        }
+
+    def to_dict(self):
+        return {
+            "comment_youtube_id": self.comment_youtube_id,
+            "text": self.text,
+            "published_at": self.published_at,
+            "like_count": self.like_count,
+            "author_name": self.author_name,
+            "author_channel_id": self.author_channel_id,
+            "author_profile_image_url": self.author_profile_image_url,
+            "total_reply_count": self.total_reply_count,
+            "stats": self.stats,
+            "commentgpt_stats": self.commentgpt_stats,
         }
 
 
@@ -413,7 +447,7 @@ class SentimentAnalysis:
             polarity=polarity, subjectivity=subjectivity, afinn=afinn
         )
 
-        return comment_psa_stats.to_json()
+        return comment_psa_stats
 
 
 class CSVExporter:

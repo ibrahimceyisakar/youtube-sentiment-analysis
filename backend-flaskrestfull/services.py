@@ -40,19 +40,14 @@ def do_youtube_sentiment_analysis_of_content(video_code):
     commentgpt_stats = OpenAIAPIWrapper.make_request(
         [(c.comment_youtube_id + " - " + c.text) for c in processed_comments]
     )
+
+    processed_comments = [c.to_json() for c in processed_comments]
+    sentiment_stats = [c.to_json() for c in sentiment_stats]
     commentgpt_stats = [c.to_json() for c in commentgpt_stats]
-    processed_comments = [c.__dict__ for c in processed_comments]
 
     for c in processed_comments:
         c["stats"] = sentiment_stats[processed_comments.index(c)]
         c["commentgpt_stats"] = commentgpt_stats[processed_comments.index(c)]
-        """
-        convert to dict for json serialisation
-        because c is a Comment object,
-        and Comment object is not json serialisable (at the moment)
-        because view returns a a dict with stats, comments keys added to it
-        its better to make stats a seperate dataclass later
-        """
 
     # csv_exporter = CSVExporter()
     # csv_exporter.export(processed_comments)
