@@ -28,6 +28,9 @@ def do_youtube_sentiment_analysis_of_content(video_code):
         exit()
 
     print("Len of processed_comments: ", len(processed_comments))
+    COMMENT_COUNT_LIMIT = 20
+    if len(processed_comments) > COMMENT_COUNT_LIMIT:
+        processed_comments = processed_comments[:COMMENT_COUNT_LIMIT]
 
     # Calculate sentiment PSA stats for each comment (subjectivity, polarity, afinn)
     # It is a list of CommentPSAStats objects
